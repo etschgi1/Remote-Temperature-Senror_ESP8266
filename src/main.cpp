@@ -6,10 +6,11 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 //defines DHT:
-#define DHTPIN 5 // Digital pin connected to the DHT sensor
+#define DHTPIN 5 // Digital pin connected to the DHT sensor (//!in fact D1 on board!!!)
 
-#define DHTTYPE DHT22 // DHT 22  (AM2302), AM2321
+#define DHTTYPE DHT11 // Change for other Sensors DHT11 and DHT 21 should be supported
 
+#define BROADCAST_CHANNEL "/etschgi1/temp/3"
 DHT dht(DHTPIN, DHTTYPE);
 //setup MQTT: ----
 // const char *SSID = ""; //! Better specified in header or compiled file
@@ -18,15 +19,12 @@ const char *MQTT_BROKER = "192.168.68.143"; //IP Raspberry PI
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-long lastMsg = 0;
-char msg[50];
-int value = 0;
 //end -----
 void setup_wifi()
 {
   delay(10);
   Serial.println();
-  Serial.print("Connecting to ");
+  Serial.print("Connecting to: ");
   Serial.println(SSID);
 
   WiFi.begin(SSID, PSK);
@@ -82,8 +80,8 @@ void loop()
   }
   //MQTT publish
   char msg[15];
-  snprintf(msg, 15, "%.1f-%.0f", t, h);
-  client.publish("/elias/temp", msg);
+  snprintf(msg, 15, "T=%.1f,H=%.0f", t, h);
+  client.publish(BROADCAST_CHANNEL, msg);
   Serial.print(F("Humidity: "));
   Serial.print(h);
   Serial.print(F("%  Temperature: "));
